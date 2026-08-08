@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../list/helper.dart';
+import '../../utils/helper.dart';
+import '../list/list_item_screen.dart';
 import 'auth_provider.dart';
 import 'register_screen.dart';
 
@@ -12,6 +13,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     final readProvider = context.read<AuthProvider>();
@@ -22,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Form(
-            key: readProvider.formKey,
+            key: _formKey,
             child: Column(
               children: [
                 const SizedBox(height: 24),
@@ -69,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: double.infinity,
                         child: FilledButton(
                           onPressed: () {
-                            if (readProvider.formKey.currentState!.validate()) {
+                            if (_formKey.currentState!.validate()) {
                               actionLogin(readProvider, context);
                             }
                           },
@@ -112,6 +115,11 @@ void actionLogin(AuthProvider readProvider, BuildContext context) async {
         context,
         response?.message ?? "Login berhasil!",
         color: Colors.green,
+      );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const ListItemScreen()),
+        (route) => false,
       );
     } else {
       Helper.showSnackBar(

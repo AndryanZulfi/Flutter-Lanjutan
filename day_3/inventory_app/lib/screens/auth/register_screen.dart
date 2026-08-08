@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../list/helper.dart';
+import '../../utils/helper.dart';
 import 'auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -11,6 +11,8 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     final readProvider = context.read<AuthProvider>();
@@ -21,7 +23,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Form(
-            key: readProvider.formKey,
+            key: _formKey,
             child: SingleChildScrollView(
               child: Column(
                 children: [
@@ -103,8 +105,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           width: double.infinity,
                           child: FilledButton(
                             onPressed: () {
-                              if (readProvider.formKey.currentState!
-                                  .validate()) {
+                              if (_formKey.currentState!.validate()) {
                                 actionRegister(readProvider, context);
                               }
                             },
