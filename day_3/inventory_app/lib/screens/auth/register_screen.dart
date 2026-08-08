@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../list/helper.dart';
+import 'auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -8,169 +11,118 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _passwordConfirmController = TextEditingController();
-
-  bool _isPasswordObscured = true;
-  bool _isPasswordConfirmObscured = true;
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _passwordConfirmController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
+    final readProvider = context.read<AuthProvider>();
+    final watchProvider = context.watch<AuthProvider>();
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Buat Akun Baru'),
-      ),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: readProvider.formKey,
+            child: SingleChildScrollView(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
-                    'Daftar Akun',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
+                  const SizedBox(height: 24),
+                  const Text("Register", style: TextStyle(fontSize: 26)),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    decoration: const InputDecoration(
+                      hintText: "Masukkan nama anda",
                     ),
+                    onChanged: (value) {
+                      readProvider.name = value.trim();
+                    },
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return "Nama tidak boleh kosong";
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Isi formulir di bawah ini untuk membuat akun',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
                   TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Nama Lengkap',
-                      hintText: 'masukkan nama lengkap',
-                      prefixIcon: const Icon(Icons.person_outline),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'masukkan email',
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                    decoration: const InputDecoration(
+                      hintText: "Masukkan email anda",
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: _isPasswordObscured,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      hintText: 'masukkan password',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _isPasswordObscured
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isPasswordObscured = !_isPasswordObscured;
-                          });
-                        },
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordConfirmController,
-                    obscureText: _isPasswordConfirmObscured,
-                    decoration: InputDecoration(
-                      labelText: 'Konfirmasi Password',
-                      hintText: 'ulangi password',
-                      prefixIcon: const Icon(Icons.lock_reset_outlined),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _isPasswordConfirmObscured
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isPasswordConfirmObscured =
-                                !_isPasswordConfirmObscured;
-                          });
-                        },
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      // UI only
+                    onChanged: (value) {
+                      readProvider.email = value.trim();
                     },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.deepPurple,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Register',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return "Email tidak boleh kosong";
+                      }
+                      return null;
+                    },
                   ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      hintText: "Masukkan password anda",
+                    ),
+                    onChanged: (value) {
+                      readProvider.password = value.trim();
+                    },
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return "Password tidak boleh kosong";
+                      }
+                      if (value.trim().length < 8) {
+                        return "Password kurang dari 8 karakter";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      hintText: "Masukkan konfirmasi password anda",
+                    ),
+                    onChanged: (value) {
+                      readProvider.confirmPassword = value.trim();
+                    },
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return "Konfirmasi password tidak boleh kosong";
+                      }
+                      if (value.trim() != readProvider.password) {
+                        return "Konfirmasi password tidak cocok";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  watchProvider.isLoading
+                      ? const CircularProgressIndicator()
+                      : SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            onPressed: () {
+                              if (readProvider.formKey.currentState!
+                                  .validate()) {
+                                actionRegister(readProvider, context);
+                              }
+                            },
+                            child: const Text("Register"),
+                          ),
+                        ),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Sudah punya akun? "),
+                      const Text("Sudah punya akun? Silahkan masuk "),
                       GestureDetector(
                         onTap: () {
                           Navigator.pop(context);
                         },
                         child: const Text(
-                          'Login',
-                          style: TextStyle(
-                            color: Colors.deepPurple,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          "disini",
+                          style: TextStyle(color: Colors.blue),
                         ),
                       ),
                     ],
@@ -181,6 +133,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+void actionRegister(AuthProvider readProvider, BuildContext context) async {
+  try {
+    final response = await readProvider.register();
+    if (!context.mounted) return;
+
+    if (response?.status == "success" || response?.data?.user != null) {
+      Helper.showSnackBar(
+        context,
+        response?.message ?? "Register berhasil!",
+        color: Colors.green,
+      );
+      Navigator.pop(context);
+    } else {
+      Helper.showSnackBar(
+        context,
+        response?.message ?? "Register gagal!",
+        color: Colors.red,
+      );
+    }
+  } catch (e) {
+    if (!context.mounted) return;
+    Helper.showSnackBar(
+      context,
+      e.toString().replaceAll("Exception: ", ""),
+      color: Colors.red,
     );
   }
 }
