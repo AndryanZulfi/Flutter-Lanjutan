@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../components/grid_item_widget.dart';
 import '../auth/auth_provider.dart';
 import 'list_item_provider.dart';
 
@@ -13,6 +14,8 @@ class ListItemScreen extends StatefulWidget {
 }
 
 class _ListItemScreenState extends State<ListItemScreen> {
+  bool _isGrid = false;
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +41,15 @@ class _ListItemScreenState extends State<ListItemScreen> {
           },
         ),
         actions: [
+          IconButton(
+            icon: Icon(_isGrid ? Icons.view_list : Icons.grid_view),
+            tooltip: _isGrid ? "Tampilan List" : "Tampilan Grid",
+            onPressed: () {
+              setState(() {
+                _isGrid = !_isGrid;
+              });
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
@@ -74,35 +86,50 @@ class _ListItemScreenState extends State<ListItemScreen> {
 
           return RefreshIndicator(
             onRefresh: () => provider.getListItem(),
-            child: ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: provider.items.length,
-              itemBuilder: (context, index) {
-                final item = provider.items[index];
-                return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(12),
-                    leading: _buildItemImage(item.imageBase64),
-                    title: Text(
-                      item.name ?? "-",
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+            child: _isGrid
+                ? GridView.builder(
+                    padding: const EdgeInsets.all(12),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 0.85,
                     ),
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Text("Stok: ${item.stock ?? 0}"),
-                    ),
+                    itemCount: provider.items.length,
+                    itemBuilder: (context, index) {
+                      return GridItemWidget(item: provider.items[index]);
+                    },
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: provider.items.length,
+                    itemBuilder: (context, index) {
+                      final item = provider.items[index];
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(12),
+                          leading: _buildItemImage(item.imageBase64),
+                          title: Text(
+                            item.name ?? "-",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Text("Stok: ${item.stock ?? 0}"),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           );
         },
       ),
