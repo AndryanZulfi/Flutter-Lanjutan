@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../components/grid_item_widget.dart';
+import '../../models/item.dart';
+import '../../utils/helper.dart';
 import '../auth/auth_provider.dart';
+import '../auth/login_screen.dart';
+import '../form/form_screen.dart';
 import 'list_item_provider.dart';
 
 class ListItemScreen extends StatefulWidget {
@@ -25,6 +29,45 @@ class _ListItemScreenState extends State<ListItemScreen> {
         context.read<ListItemProvider>().getListItem();
       }
     });
+  }
+
+  Future<void> _navigateToForm([Item? itemToEdit]) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FormScreen(itemToEdit: itemToEdit),
+      ),
+    );
+    if (result == true && mounted) {
+      context.read<ListItemProvider>().getListItem();
+    }
+  }
+
+  Future<void> _confirmDelete(Item item) async {
+    if (item.id == null) return;
+    final confirm = await Helper.showConfirmDialog(
+      context,
+      title: "Hapus Item",
+      message: "Apakah Anda yakin ingin menghapus '${item.name}'?",
+      confirmText: "Hapus",
+    );
+
+    if (confirm == true && mounted) {
+      try {
+        final response =
+            await context.read<ListItemProvider>().deleteItem(item.id!);
+        if (mounted) {
+          Helper.showSnackBar(
+            context,
+            response?.message ?? "Berhasil menghapus item",
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          Helper.showSnackBar(context, "Gagal menghapus: $e");
+        }
+      }
+    }
   }
 
   @override
@@ -56,6 +99,31 @@ class _ListItemScreenState extends State<ListItemScreen> {
               context.read<ListItemProvider>().getListItem();
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.exit_to_app),
+            tooltip: "Logout",
+            onPressed: () async {
+              final confirm = await Helper.showConfirmDialog(
+                context,
+                title: "Logout",
+                message: "Apakah Anda yakin ingin keluar?",
+                confirmText: "Logout",
+              );
+
+              if (confirm == true && context.mounted) {
+                await context.read<ListItemProvider>().logout();
+                if (context.mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                    (route) => false,
+                  );
+                }
+              }
+            },
+          ),
         ],
       ),
       body: Consumer<ListItemProvider>(
@@ -71,12 +139,12 @@ class _ListItemScreenState extends State<ListItemScreen> {
               onRefresh: () => provider.getListItem(),
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: const [
-                  SizedBox(height: 200),
+                children: [
+                  const SizedBox(height: 200),
                   Center(
                     child: Text(
                       "Data barang kosong",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                      style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
                     ),
                   ),
                 ],
@@ -98,7 +166,11 @@ class _ListItemScreenState extends State<ListItemScreen> {
                     ),
                     itemCount: provider.items.length,
                     itemBuilder: (context, index) {
-                      return GridItemWidget(item: provider.items[index]);
+                      final item = provider.items[index];
+                      return GridItemWidget(
+                        item: item,
+                        onTap: () => _navigateToForm(item),
+                      );
                     },
                   )
                 : ListView.builder(
@@ -113,6 +185,7 @@ class _ListItemScreenState extends State<ListItemScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: ListTile(
+                          onTap: () => _navigateToForm(item),
                           contentPadding: const EdgeInsets.all(12),
                           leading: _buildItemImage(item.imageBase64),
                           title: Text(
@@ -126,12 +199,31 @@ class _ListItemScreenState extends State<ListItemScreen> {
                             padding: const EdgeInsets.only(top: 4.0),
                             child: Text("Stok: ${item.stock ?? 0}"),
                           ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined,
+                                    color: Colors.blue),
+                                onPressed: () => _navigateToForm(item),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline,
+                                    color: Colors.red),
+                                onPressed: () => _confirmDelete(item),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
                   ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _navigateToForm(),
+        child: const Icon(Icons.add),
       ),
     );
   }

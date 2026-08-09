@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../models/form_response.dart';
 import '../../models/item.dart';
 import '../../models/list_item_response.dart';
 import '../../services/item_service.dart';
@@ -26,6 +28,34 @@ class ListItemProvider extends ChangeNotifier {
       _items = response.data?.items ?? [];
       notifyListeners();
       return response;
+    } catch (e) {
+      rethrow;
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  Future<FormResponse?> deleteItem(num id) async {
+    setIsLoading(true);
+    try {
+      final response = await _itemService.deleteItem(id);
+      await getListItem();
+      return response;
+    } catch (e) {
+      rethrow;
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  Future<bool> logout() async {
+    setIsLoading(true);
+    try {
+      final session = await SharedPreferences.getInstance();
+      await session.clear();
+      _items = [];
+      notifyListeners();
+      return true;
     } catch (e) {
       rethrow;
     } finally {

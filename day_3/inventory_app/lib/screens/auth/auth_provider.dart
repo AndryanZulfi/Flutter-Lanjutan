@@ -79,4 +79,22 @@ class AuthProvider extends ChangeNotifier {
       setIsLoading(false);
     }
   }
+
+  Future<bool> logout() async {
+    setIsLoading(true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      name = "";
+      email = "";
+      password = "";
+      confirmPassword = "";
+      notifyListeners();
+      return true;
+    } catch (e) {
+      rethrow;
+    } finally {
+      setIsLoading(false);
+    }
+  }
 }
